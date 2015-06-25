@@ -550,6 +550,10 @@ ex power::eval(int level) const
 	if (is_exactly_a<function>(ebasis))
 		return ex_to<function>(ebasis).power(eexponent);
 
+        if (info(info_flags::inexact) and
+                not has_symbol(ebasis) and not has_symbol(eexponent))
+                return ex_to<numeric>(ebasis.evalf(0)).power(ex_to<numeric>(eexponent.evalf(0)));
+
 	// Turn (x^c)^d into x^(c*d) in the case that x is positive and c is real.
 	if (is_exactly_a<power>(ebasis) && ebasis.op(0).info(info_flags::positive) && ebasis.op(1).info(info_flags::real))
 		return power(ebasis.op(0), ebasis.op(1) * eexponent);

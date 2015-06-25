@@ -401,24 +401,50 @@ ex add::eval(int level) const
 		throw (std::logic_error("add::eval(): sum of non-commutative objects has non-zero numeric term"));
 	}
 
-	// if any terms in the sum still are purely numeric, then they are more
-	// appropriately collected into the overall coefficient
-	int terms_to_collect = 0;
-	for (const auto & elem : seq)
-		if (unlikely(is_a<numeric>(elem.rest)))
-			++terms_to_collect;
-	if (terms_to_collect) {
+        // if any terms in the sum still are purely numeric, then they are more
+        // appropriately collected into the overall coefficient
+        int terms_to_collect = 0;
+        epvector nonsyms, syms;
+        for (const auto & elem : seq) {
+                if (not has_symbol(elem.rest))
+                        nonsyms.push_back(elem);
+                else
+                        syms.push_back(elem);
+                if (unlikely(is_a<numeric>(elem.rest)))
+                        ++terms_to_collect;
+        }
+
+        if (info(info_flags::inexact)) {
+                numeric oc = *_num0_p;
+                for (const auto & elem : nonsyms) {
+                        const ex& evalf_res = elem.rest.evalf();
+                        if (is_exactly_a<numeric>(evalf_res))
+                                oc += ex_to<numeric>(evalf_res) * ex_to<numeric>(elem.coeff.evalf());
+                        else
+                                syms.push_back(elem);
+                }
                 epvector s;
-		s.reserve(seq_size - terms_to_collect);
-		numeric oc = *_num0_p;
+                s.reserve(syms.size());
+                for (const auto & elem : syms)
+                        s.push_back(elem);
+                if (syms.empty())
+                        return ex_to<numeric>(overall_coeff).add_dyn(oc);
+                else
+                        return (new add(s, ex_to<numeric>(overall_coeff).add_dyn(oc)))
+                                ->setflag(status_flags::dynallocated|status_flags::evaluated);
+        }
+        if (terms_to_collect) {
+                epvector s;
+                s.reserve(seq_size - terms_to_collect);
+                numeric oc = *_num0_p;
                 for (const auto & elem : seq)
-			if (unlikely(is_a<numeric>(elem.rest)))
-				oc = oc.add((ex_to<numeric>(elem.rest)).mul(ex_to<numeric>(elem.coeff)));
-			else
-				s.push_back(elem);
-		return (new add(s, ex_to<numeric>(overall_coeff).add_dyn(oc)))
-		        ->setflag(status_flags::dynallocated);
-	}
+                        if (unlikely(is_a<numeric>(elem.rest)))
+                                oc = oc.add((ex_to<numeric>(elem.rest)).mul(ex_to<numeric>(elem.coeff)));
+                        else
+                                s.push_back(elem);
+                return (new add(s, ex_to<numeric>(overall_coeff).add_dyn(oc)))
+                        ->setflag(status_flags::dynallocated);
+        }
 
 	return this->hold();
 }
