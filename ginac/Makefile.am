@@ -8,7 +8,7 @@ libpynac_la_SOURCES = py_funcs.cpp add.cpp archive.cpp basic.cpp clifford.cpp \
   inifcns_trans.cpp inifcns_gamma.cpp inifcns_nstdsums.cpp \
   integral.cpp lst.cpp matrix.cpp mul.cpp ncmul.cpp normal.cpp numeric.cpp \
   operators.cpp power.cpp registrar.cpp relational.cpp remember.cpp \
-  pseries.cpp print.cpp symbol.cpp symmetry.cpp tensor.cpp \
+  pseries.cpp pseries_flint.cpp print.cpp symbol.cpp symmetry.cpp tensor.cpp \
   utils.cpp wildcard.cpp templates.cpp infoflagbase.cpp \
   remember.h tostring.h utils.h compiler.h order.cpp assume.cpp
 
