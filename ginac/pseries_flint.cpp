@@ -99,7 +99,7 @@ fp_t _series(const ex &x, const symbol &var, unsigned int prec)
     
         const fp_t var_p(var.get_name());
         if (is_exactly_a<function>(x)) {
-            series_func_t func = function_map[x];
+            series_func_t func = function_map[ex_to<function>(x)];
             auto series_inner = _series(x.op(0), var, prec);
             return func(std::move(series_inner), var_p, prec);
         }
