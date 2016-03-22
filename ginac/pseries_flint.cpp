@@ -12,43 +12,85 @@ namespace GiNaC {
 using fp_t = flint::fmpq_polyxx;
 
 /* Returns the sine series expansion of flint */
-fp_t series_sine(const fp_t& s, const fp_t& var, unsigned int prec)
+fp_t series_sin(const fp_t& s, const fp_t& var, unsigned int prec)
 {
     return fp_t(sin_series(s,prec));                                      
 }
 
-using series_func_t = decltype(&series_sine);       /* type-defining series_func_t to the function type of series_sine() */
+fp_t series_cos(const fp_t& s, const fp_t& var, unsigned int prec)
+{
+    return fp_t(cos_series(s,prec));                                      
+}
+
+fp_t series_tan(const fp_t& s, const fp_t& var, unsigned int prec)
+{
+    return fp_t(tan_series(s,prec));                                      
+}
+
+fp_t series_log(const fp_t& s, const fp_t& var, unsigned int prec)
+{
+    return fp_t(log_series(s,prec));                                      
+}
+
+fp_t series_exp(const fp_t& s, const fp_t& var, unsigned int prec)
+{
+    return fp_t(exp_series(s,prec));                                      
+}
+
+fp_t series_asin(const fp_t& s, const fp_t& var, unsigned int prec)
+{
+    return fp_t(asin_series(s,prec));                                      
+}
+
+fp_t series_atan(const fp_t& s, const fp_t& var, unsigned int prec)
+{
+    return fp_t(atan_series(s,prec));                                      
+}
+
+fp_t series_sinh(const fp_t& s, const fp_t& var, unsigned int prec)
+{
+    return fp_t(sinh_series(s,prec));                                      
+}
+
+fp_t series_cosh(const fp_t& s, const fp_t& var, unsigned int prec)
+{
+    return fp_t(cosh_series(s,prec));                                      
+}
+
+fp_t series_tanh(const fp_t& s, const fp_t& var, unsigned int prec)
+{
+    return fp_t(tanh_series(s,prec));                                      
+}
+
+fp_t series_asinh(const fp_t& s, const fp_t& var, unsigned int prec)
+{
+    return fp_t(asinh_series(s,prec));                                      
+}
+
+fp_t series_atanh(const fp_t& s, const fp_t& var, unsigned int prec)
+{
+    return fp_t(atanh_series(s,prec));                                      
+}
+
+using series_func_t = decltype(&series_sin);       /* type-defining series_func_t to the function type of series_sine() */
 
 /* function map of the trig-functions */
 static std::map<std::string, series_func_t> function_map;
 void build_function_map() {
-    function_map["sin"] = &series_sine;
-   /* function_map[cos] = &series_cos;
-    function_map[tan] = &series_tan;
-    function_map[cot] = &series_cot;
-    function_map[sec] = &series_sec;
-    function_map[csc] = &series_csc;
-    function_map[log] = &series_log;
-    function_map[exp] = &series_exp;
-    function_map[asin] = &series_asin;
-    function_map[acos] = &series_acos;
-    function_map[atan] = &series_atan;
-    function_map[acot] = &series_acot;
-    function_map[asec] = &series_asec;
-    function_map[acsc] = &series_acsc;
-    function_map[sinh] = &series_sinh;
-    function_map[cosh] = &series_cosh;
-    function_map[tanh] = &series_tanh;
-    function_map[coth] = &series_coth;
-    function_map[sech] = &series_sech;
-    function_map[csch] = &series_csch;
-    function_map[asinh] = &series_asinh;
-    function_map[acosh] = &series_acosh;
-    function_map[atanh] = &series_atanh;
-    function_map[acoth] = &series_acoth;
-    function_map[asech] = &series_asech;
-    function_map[acsch] = &series_acsch;*/
+    function_map["sin"] = &series_sin;
+    function_map["cos"] = &series_cos;
+    function_map["tan"] = &series_tan;
+    function_map["log"] = &series_log;
+    function_map["exp"] = &series_exp;
+    function_map["asin"] = &series_asin;
+    function_map["atan"] = &series_atan;
+    function_map["sinh"] = &series_sinh;
+    function_map["cosh"] = &series_cosh;
+    function_map["tanh"] = &series_tanh;
+    function_map["asinh"] = &series_asinh;
+    function_map["atanh"] = &series_atanh;
 } 
+
 static int _helper(const ex &x, const symbol &var, unsigned int prec)
 {
     if (function_map.size() == 0) {
@@ -82,36 +124,35 @@ static int _helper(const ex &x, const symbol &var, unsigned int prec)
         return 1;
     }
 } 
+
 /* recursive function, which will convert the function argument in the series expansion and then pass it to the upper level function by recurrence */
 fp_t _series(const ex &x, const symbol &var, unsigned int prec)
 {
     const int h = _helper(x, var, prec);
-    if (h == 1) {
-       /* if (is_exactly_a<numeric>(x)) {
-            const numeric i1 = ex_to<numeric>(x);
-            flint::fmpqxx i;
-            i=i1;
-            return fp_t(i);
-        }*/
 
-        if (is_exactly_a<symbol>(x)) {
-            return fp_t("2 0 1");
-        }
-    
-        const fp_t var_p("2 0 1");
-        if (is_exactly_a<function>(x)) {
-            series_func_t func = function_map[ex_to<function>(x).get_name()];
-            auto series_inner = _series(x.op(0), var, prec);
-            return func(std::move(series_inner), var_p, prec);
-        }
-    }
-    else if (h == 0) {
+    if (h == 0) {
         throw std::runtime_error("Expansion of multivar functions not Implemented");
     }
-    else if (h == -1) {
+    if (h == -1) {
         throw std::runtime_error(std::string("No expansion for this function: "));
     }
-}
+    if (is_exactly_a<numeric>(x)) {
+        const numeric i1 = ex_to<numeric>(x);
+        flint::fmpqxx i;
+        i=i1;
+        return fp_t(i);
+    }
 
+    if (is_exactly_a<symbol>(x)) {
+        return fp_t("2 0 1");
+    }
+    
+    const fp_t var_p("2 0 1");
+    if (is_exactly_a<function>(x)) {
+        series_func_t func = function_map[ex_to<function>(x).get_name()];
+        auto series_inner = _series(x.op(0), var, prec);
+        return func(std::move(series_inner), var_p, prec);
+    }    
+}
 
 }
