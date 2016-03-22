@@ -20,9 +20,9 @@ fp_t series_sine(const fp_t& s, const fp_t& var, unsigned int prec)
 using series_func_t = decltype(&series_sine);       /* type-defining series_func_t to the function type of series_sine() */
 
 /* function map of the trig-functions */
-static std::map<function, series_func_t> function_map;
+static std::map<std::string, series_func_t> function_map;
 void build_function_map() {
-    function_map[sin] = &series_sin;
+    function_map["sin"] = &series_sine;
    /* function_map[cos] = &series_cos;
     function_map[tan] = &series_tan;
     function_map[cot] = &series_cot;
@@ -64,7 +64,7 @@ static int _helper(const ex &x, const symbol &var, unsigned int prec)
             return 0;
         }
         function f = ex_to<function>(x);
-        series_func_t func = function_map[f];
+        series_func_t func = function_map[f.get_name()];
         if (func == nullptr) {
             return -1;
         }
@@ -87,19 +87,20 @@ fp_t _series(const ex &x, const symbol &var, unsigned int prec)
 {
     const int h = _helper(x, var, prec);
     if (h == 1) {
-        if (is_exactly_a<numeric>(x)) {
+       /* if (is_exactly_a<numeric>(x)) {
             const numeric i1 = ex_to<numeric>(x);
-            flint::fmpqxx i(i1);
+            flint::fmpqxx i;
+            i=i1;
             return fp_t(i);
-        }
+        }*/
 
         if (is_exactly_a<symbol>(x)) {
-            return fp_t(ex_to<symbol>(x).get_name());
+            return fp_t("2 0 1");
         }
     
-        const fp_t var_p(var.get_name());
+        const fp_t var_p("2 0 1");
         if (is_exactly_a<function>(x)) {
-            series_func_t func = function_map[ex_to<function>(x)];
+            series_func_t func = function_map[ex_to<function>(x).get_name()];
             auto series_inner = _series(x.op(0), var, prec);
             return func(std::move(series_inner), var_p, prec);
         }
