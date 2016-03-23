@@ -6,11 +6,12 @@
 #include "symbol.h"
 #include "numeric.h"
 #include "function.h"
+#include <string>
 
 namespace GiNaC {
 
 using fp_t = flint::fmpq_polyxx;
-
+//using namespace std;
 /* Returns the sine series expansion of flint */
 fp_t series_sin(const fp_t& s, const fp_t& var, unsigned int prec)
 {
@@ -138,21 +139,41 @@ fp_t _series(const ex &x, const symbol &var, unsigned int prec)
     }
     if (is_exactly_a<numeric>(x)) {
         const numeric i1 = ex_to<numeric>(x);
-        flint::fmpqxx i;
-        i=i1;
-        return fp_t(i);
+        std::string ss("1  ");
+        std::string ss1("1  ");
+        if (i1.is_rational()) {
+           const numeric n = i1.numer();
+           const numeric d = i1.denom();
+           int num = n.to_int();
+           int den = d.to_int();
+           std::string strn = std::to_string(num);
+           std::string strd = std::to_string(den);
+           ss.append(strn);
+           ss1.append(strd);
+           const char *c = ss.c_str();
+           const char *c1 = ss1.c_str();
+           fp_t c2(fp_t(c)/fp_t(c1)); 
+           return fp_t(c2);   
+        }
+        
+        int a = i1.to_int();
+        std::string str = std::to_string(a);
+        ss.append(str);
+        const char *c = ss.c_str();
+        return fp_t(c);
     }
 
     if (is_exactly_a<symbol>(x)) {
-        return fp_t("2 0 1");
+        return fp_t("2  0 1");
     }
     
-    const fp_t var_p("2 0 1");
+    const fp_t var_p("2  0 1");
     if (is_exactly_a<function>(x)) {
         series_func_t func = function_map[ex_to<function>(x).get_name()];
         auto series_inner = _series(x.op(0), var, prec);
         return func(std::move(series_inner), var_p, prec);
-    }    
+    } 
+return fp_t("1  0");   
 }
 
 }
