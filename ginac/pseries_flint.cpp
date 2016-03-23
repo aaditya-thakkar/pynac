@@ -1,12 +1,9 @@
-#include <flint/fmpq_polyxx.h>
-#include <numeric>
-#include <limits>
-#include <stdexcept>
 #include "ex.h"
 #include "symbol.h"
 #include "numeric.h"
 #include "function.h"
 #include <string>
+#include <flint/fmpq_polyxx.h>
 
 namespace GiNaC {
 
