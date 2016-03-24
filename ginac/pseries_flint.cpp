@@ -2,13 +2,14 @@
 #include "symbol.h"
 #include "numeric.h"
 #include "function.h"
+#include "power.h"
 #include <string>
 #include <flint/fmpq_polyxx.h>
 
 namespace GiNaC {
 
 using fp_t = flint::fmpq_polyxx;
-//using namespace std;
+
 /* Returns the sine series expansion of flint */
 fp_t series_sin(const fp_t& s, const fp_t& var, unsigned int prec)
 {
@@ -169,7 +170,40 @@ fp_t _series(const ex &x, const symbol &var, unsigned int prec)
         series_func_t func = function_map[ex_to<function>(x).get_name()];
         auto series_inner = _series(x.op(0), var, prec);
         return func(std::move(series_inner), var_p, prec);
-    } 
+    }
+
+    if (is_exactly_a<power>(x)) {
+        const power p = ex_to<power>(x);
+        const ex bs = p.get_basis();
+        const ex expn = p.get_exponent();
+        if (is_exactly_a<numeric>(expn)) {
+            const numeric e = ex_to<numeric>(expn);
+            if (e.is_rational()) {
+                const numeric n = e.numer();
+                const numeric d = e.denom();
+                int num = n.to_int();
+                int den = d.to_int();
+                const fp_t ps_root(series_nthroot(_series(bs, var, prec), den, var_p, prec));   //series_nthroot() --> coming soon! :P
+                if (num > 0) {
+                    return fp_t(ps_root.pow(unsigned(num)));
+                }
+                else if (num < 0) {
+                    return fp_t(ps_root.inv_series(prec).pow(unsigned(-num)));
+                }
+                return fp_t("1  0");
+            } 
+            int expon = e.to_int();
+            const fp_t pbasis(_series(bs, var, prec));
+            if (expon > 0) {
+                return fp_t(pbasis.pow(unsigned(expon)));
+            }
+            else if (expon < 0) {
+                return fp_t(pbasis.inv_series(prec).pow(unsigned(-expon)));
+            }
+            return fp_t("1  0");  
+        }
+        
+    }
 return fp_t("1  0");   
 }
 

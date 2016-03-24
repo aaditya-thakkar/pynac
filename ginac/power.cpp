@@ -915,6 +915,15 @@ ex power::imag_part() const
 	return power(abs(basis),c)*exp(-d*atan2(b,a))*sin(c*atan2(b,a)+d*log(abs(basis)));
 }
 
+ex power::get_basis() const
+{
+        return basis;        
+}
+
+ex power::get_exponent() const
+{
+        return exponent;
+}
 // protected
 
 // protected

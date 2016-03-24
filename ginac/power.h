@@ -74,6 +74,8 @@ public:
 	ex conjugate() const override;
 	ex real_part() const override;
 	ex imag_part() const override;
+        ex get_basis() const;
+        ex get_exponent() const;
 	//int compare(const basic& other) const;
 	//int compare_symbol(const symbol& other) const;
 protected:
